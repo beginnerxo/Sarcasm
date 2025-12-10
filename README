@@ -1,0 +1,103 @@
+Deep Dive: How We Detect Sarcasm (Without Transformers)
+1. The Core Problem
+Sarcasm is unique because it is often a contradiction between content (what is said) and intent (what is meant).
+Literal: "I love this weather." (It is sunny.)
+Sarcastic: "I love this weather." (It is a hurricane.)
+Since we cannot use Transformers (which read "context" like a human does), we have to rely on lexical cues (words) and structural cues (punctuation/patterns). This drives every decision in our environment.
+
+
+
+2. The Preprocessing (src/utils.py)
+
+
+The Code
+text = re.sub(f"([{string.punctuation}])", r" \1 ", text)   
+
+
+The "Why"
+Standard data cleaning usually strips punctuation to make text "clean." For sarcasm, this is fatal.
+"Great." is neutral.
+"Great!!!" is likely enthusiastic or sarcastic.
+"Great..." implies disappointment.
+What we did: Instead of deleting punctuation, we isolated it. We put spaces around it.
+Input: Great!!!
+Output: great ! ! !
+The Effect: Now, when the model looks at the data, it sees "!" not just as a character, but as a distinct "word" (token). If the model sees three "!" tokens in a row, it can learn that this pattern correlates with sarcasm.
+
+
+
+3. Feature Engineering: TF-IDF (train_model.py)
+The Code
+TfidfVectorizer(ngram_range=(1, 2), min_df=2, ...)
+
+
+The "Why"
+Computers can't read English; they only read numbers. We need to convert ['great', 'job'] into a math vector. We used TF-IDF (Term Frequency-Inverse Document Frequency).
+The Analogy:
+Imagine you are trying to identify a document about "Sarcasm."
+The word "the" appears 100 times. It has high frequency (TF) but it appears in every document, so it has low importance (IDF). Score: Low.
+The word "Duh" appears 2 times, but only in sarcastic documents. It has high importance. Score: High.
+What are N-Grams? (ngram_range=(1, 2))
+Unigram (1): "Good", "Luck". The model sees these as separate atoms.
+Bigram (2): "Good Luck". The model sees this as a specific phrase.
+Why we need Bigrams: Sarcasm often lives in pairs. "Yeah" is neutral. "Yeah right" is almost always sarcastic. By using (1, 2), we let the model see both individual words and pairs.
+
+
+4. The "Brains" of the Operation (The Ensemble)
+We didn't trust just one algorithm. We built a Voting Ensemble. Think of this as a jury of three distinct experts trying to reach a verdict.
+Juror 1: Logistic Regression (The Statistician)
+What it does: It draws a straight line through the data. It calculates a specific "sarcasm weight" for every word.
+Strength: It is incredibly fast and interpretable. It knows that the word "obviously" has a +5 sarcasm score and "sincerely" has a -5 score.
+Weakness: It struggles with complexity. It assumes relationships are simple and linear.
+Juror 2: Random Forest (The Crowd)
+What it does: It builds hundreds of "Decision Trees." A decision tree asks a series of Yes/No questions (e.g., "Does it have an exclamation mark?" -> "Yes" -> "Does it say 'genius'?" -> "Yes" -> "Sarcastic").
+Strength: It captures non-linear patterns. It can learn that "fine" is only sarcastic if it is followed by "...".
+Weakness: It can get obsessed with memorizing the training data (overfitting).
+Juror 3: Gradient Boosting (The Specialist)
+What it does: It also uses decision trees, but in a sequence. It builds a weak tree, sees what it got wrong, and builds a new tree specifically to fix the errors of the first one.
+Strength: It is very good at catching the "hard" cases that the other two miss.
+The Foreman: Soft Voting Classifier
+The Method: We used voting='soft'.
+Hard Voting: Jurors just say "Guilty" (1) or "Innocent" (0). Majority wins.
+Soft Voting: Jurors give a probability.
+Logistic Regression: "I'm 51% sure it's sarcasm."
+Random Forest: "I'm 90% sure it's sarcasm."
+Gradient Boosting: "I'm 80% sure it's sarcasm."
+Average: ~74%. Verdict: Sarcastic.
+Why Soft? It captures the confidence of the models, which usually leads to higher accuracy.
+
+5. The Pipeline (Pipeline([...]))
+The Concept
+In your code, you see this:
+pipeline = Pipeline([
+    ('tfidf', vectorizer),
+    ('classifier', ensemble)
+])
+
+
+The Explanation:
+Imagine you have a machine in a factory. Raw material (text) goes in one end. It must be washed (Preprocessed) and cut into shapes (Vectorized) before it can be assembled (Classified).
+If we didn't use a Pipeline, we would have to manually wash and cut the test data exactly the same way we did the training data every single time. By wrapping them in a Pipeline, we create a single object that says: "Whatever text you give me, I will automatically clean it, vectorize it, and classify it."
+This is why your predict_sarcasm.py is so short! It just loads the pipeline and feeds it raw text. The pipeline remembers exactly how to clean and count the words from the training phase.
+
+
+6. Training vs. Inference
+Training (train_model.py)
+The Goal: To learn the weights.
+The Process: The model looks at the text and the answers (0 or 1). It adjusts its internal math until it gets as many answers right as possible.
+The Output: A .pkl file. This is effectively a "brain freeze." We save the state of the model at its smartest moment.
+Inference (predict_sarcasm.py)
+The Goal: To take a test.
+The Process: We load the frozen .pkl brain. We feed it text without answers. It applies the math it learned earlier to give a prediction.
+Crucial Detail: Notice joblib.load. This revives the saved brain. If you lose sarcasm_model.pkl, the script fails because the brain is gone.
+
+
+7. Stratified Splitting
+
+
+The Code
+train_test_split(..., stratify=y)
+
+The "Why"
+Imagine your dataset has 90% non-sarcastic examples and 10% sarcastic ones. If you split the data randomly, you might accidentally end up with a test set that has zero sarcasm in it. Your model would look like a genius just by guessing "0" every time.
+Stratify ensures fairness. It forces the split to maintain the percentage. If the main data is 10% sarcasm, the training set will be 10% sarcasm, and the test set will be 10% sarcasm. This keeps your evaluation honest.

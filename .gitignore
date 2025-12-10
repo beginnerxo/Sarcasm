@@ -1,0 +1,20 @@
+# Python byte-compiled files and cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment folders
+.venv/
+venv/
+env/
+ENV/
+
+# Other common cache and environment files to ignore
+.cache/
+.pytest_cache/
+.ruff_cache/
+.idea/ # JetBrains IDE specific files
+.vscode/ # VS Code specific files (optional, as some settings can be useful to share)
+.env # Environment variables file (contains sensitive information)
+pip-log.txt
