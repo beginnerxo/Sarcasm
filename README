@@ -68,7 +68,7 @@ Why Soft? It captures the confidence of the models, which usually leads to highe
 
 5. The Pipeline (Pipeline([...]))
 The Concept
-In your code, you see this:
+In our code:
 pipeline = Pipeline([
     ('tfidf', vectorizer),
     ('classifier', ensemble)
