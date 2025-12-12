@@ -78,7 +78,7 @@ pipeline = Pipeline([
 The Explanation:
 Imagine you have a machine in a factory. Raw material (text) goes in one end. It must be washed (Preprocessed) and cut into shapes (Vectorized) before it can be assembled (Classified).
 If we didn't use a Pipeline, we would have to manually wash and cut the test data exactly the same way we did the training data every single time. By wrapping them in a Pipeline, we create a single object that says: "Whatever text you give me, I will automatically clean it, vectorize it, and classify it."
-This is why your predict_sarcasm.py is so short! It just loads the pipeline and feeds it raw text. The pipeline remembers exactly how to clean and count the words from the training phase.
+This is why our predict_sarcasm.py is so short! It just loads the pipeline and feeds it raw text. The pipeline remembers exactly how to clean and count the words from the training phase.
 
 
 6. Training vs. Inference
