@@ -1,1 +1,6 @@
 !!! FINAL REPORT SHOULD BE A PDF FILE !!!
+
+Note:
+    joblib 
+    Saves the machine learning model
+    
