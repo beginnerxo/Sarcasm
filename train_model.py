@@ -10,7 +10,7 @@ from sklearn.metrics import classification_report, accuracy_score, f1_score
 
 
 
-#Append the src directory to import utils.py 
+# Append the src directory to import utils.py
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 try:
@@ -31,7 +31,7 @@ def load_dataset(path, name):
         print(f"Error: {name} dataset ({path}) must have 'text' and 'label' columns.")
         return None, None
     
-    #Drop missing values
+    #drop missing values
     df = df.dropna(subset=['text', 'label'])
     
     #ensure integer labels
@@ -66,15 +66,15 @@ def train():
     print("\n--- Initializing Ensemble ---")
     
     
-    #1. Logistic Regression (Baseline)
-    
+    # Logistic Regression (Baseline)
     lr = LogisticRegression(C=1.0, solver='liblinear', random_state=42, max_iter=1000)
     
-    #2 Random Forest(Non-Linear)
+    
+    # Random Forest(Non-Linear)
     rf = RandomForestClassifier(n_estimators=100, max_depth=20, random_state=42, n_jobs=-1)
     
-    #3 Gradient Boosting(Confusing ones  ones)
     
+    # Gradient Boosting(Confusing ones  ones)
     gb = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
     
     ''' --------JURY----------- 
@@ -89,7 +89,7 @@ def train():
     )
 
 
-    # --- Pipeline Construction ---
+    #pipeline construction
     pipeline = Pipeline([
         ('tfidf', TfidfVectorizer(ngram_range=(1, 2), min_df=2, preprocessor=custom_preprocessor)),
         ('classifier', ensemble)
@@ -108,7 +108,7 @@ def train():
         print("-" * 30)
         
         
-        # --- Evaluation: Test Set (For Report) ---
+        #evaluation: Test Set (For Report)
     if X_test is not None:
         print("\n--- Evaluation: Test Set (Report) ---")
         test_preds = pipeline.predict(X_test)
@@ -122,7 +122,7 @@ def train():
         print(classification_report(y_test, test_preds))
         
         
-          # --- Save Model ---
+          #save the model
     os.makedirs(MODEL_DIR, exist_ok=True)
     joblib.dump(pipeline, MODEL_PATH)
     print(f"\nModel saved to {MODEL_PATH}")
