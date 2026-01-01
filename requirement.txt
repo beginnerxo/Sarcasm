@@ -3,3 +3,9 @@ pandas
 scikit-learn
 joblib
 scipy
+streamlit
+watchdog
+transformers
+torch
+accelerate
+datasets

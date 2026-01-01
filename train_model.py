@@ -34,7 +34,9 @@ def load_dataset(path, name):
     #drop missing values
     df = df.dropna(subset=['text', 'label'])
     
-    #ensure integer labels
+    #ensure integer labels, coerce invalid to NaN and drop
+    df['label'] = pd.to_numeric(df['label'], errors='coerce')
+    df = df.dropna(subset=['label'])
     df['label'] = df['label'].astype(int)
     
     

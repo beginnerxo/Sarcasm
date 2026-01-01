@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "Sarcasm",
+			"path": "."
+		},
+		{
+			"name": "data",
+			"path": "../../Sarcasm/data"
+		}
+	],
+	"settings": {}
+}
