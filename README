@@ -1,13 +1,8 @@
 Sarcasm Detection Model 🎭
-
 A Machine Learning project that detects sarcasm in text using a Soft-Voting Ensemble approach. unlike modern heavy-weight Transformer models, this project utilizes efficient feature engineering and traditional ML algorithms to achieve ~82% accuracy by leveraging lexical cues and punctuation patterns.
-
 This model operates under the constraint of not using Transformers (BERT, GPT, etc.), we focused on:
-
 Custom Preprocessing: preserving punctuation (e.g., !!!, ...) as distinct features rather than stripping them.
-
 TF-IDF Vectorization: Using Bigrams (1,2) to capture sarcastic phrases like "Yeah right".
-
 Ensemble Learning: Combining Logistic Regression, Random Forest, and Gradient Boosting.
 
 
@@ -20,8 +15,6 @@ cd Sarcasm
 2. Install Dependencies in a venv.
 
 pip install -r requirements.txt
-
-
 
 
 🛠️ Usage
