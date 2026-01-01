@@ -52,84 +52,57 @@ if 'history' not in st.session_state:
 
 # Custom CSS for modern UI
 st.markdown("""
+
 <style>
-    /* Global Styles */
+    /* Global Dark Theme */
     .stApp {
         background: linear-gradient(135deg, #0e1117 0%, #1a1c24 100%);
         color: #fafafa;
     }
     
-    /* Typography */
-    .stTitle {
-        background: linear-gradient(90deg, #ff4b4b, #ff8f6b);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-family: 'Helvetica Neue', sans-serif;
-        font-weight: 800;
-        text-align: center;
-        margin-bottom: 0.5rem;
-    }
-    
-    .subtitle {
-        text-align: center;
-        font-size: 1.2rem;
-        color: #a0a0a0;
-        margin-bottom: 2rem;
-        font-weight: 300;
+    /* Modern Card Container */
+    .css-1r6slb0, .stVerticalBlock > div {
+        border-radius: 12px;
     }
 
-    /* Input Area */
+    /* Input Area Styling */
     .stTextArea textarea {
-        background-color: rgba(38, 39, 48, 0.7);
-        color: #ffffff;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 75, 75, 0.2);
-        backdrop-filter: blur(5px);
-        transition: border 0.3s;
+        background-color: rgba(38, 39, 48, 0.7) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
     }
     .stTextArea textarea:focus {
-        border: 1px solid #ff4b4b;
-        box-shadow: 0 0 10px rgba(255, 75, 75, 0.2);
+        border: 1px solid #ff4b4b !important;
+        box-shadow: 0 0 10px rgba(255, 75, 75, 0.2) !important;
     }
 
     /* Buttons */
     .stButton button {
-        background: linear-gradient(90deg, #ff4b4b, #ff3333);
-        color: white;
-        border-radius: 25px;
-        padding: 0.6rem 2.5rem;
-        font-weight: 600;
-        border: none;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        background: linear-gradient(90deg, #ff4b4b, #ff3333) !important;
+        color: white !important;
+        border-radius: 25px !important;
+        border: none !important;
+        padding: 0.5rem 2rem !important;
+        font-weight: 600 !important;
+        transition: transform 0.2s !important;
     }
     .stButton button:hover {
-        transform: scale(1.05);
-        box-shadow: 0 5px 15px rgba(255, 75, 75, 0.4);
+        transform: scale(1.05) !important;
+        box-shadow: 0 5px 15px rgba(255, 75, 75, 0.4) !important;
     }
-    
-    /* Result Cards */
+
+    /* Results Card */
     .result-box {
-        padding: 2.5rem;
-        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 20px;
         text-align: center;
-        margin-top: 2rem;
-        animation: slideUp 0.6s ease-out;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background-color: #12141a;
-        border-right: 1px solid #262730;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 20px;
     }
 </style>
+
 """, unsafe_allow_html=True)
 
 @st.cache_resource
@@ -161,8 +134,8 @@ def main():
     # ... (Sidebar code remains the same)
 
     # Main Content
-    st.markdown("<h1 class='stTitle'>😏 Sarcasm Detector AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='subtitle'>Comparing Ensemble Learning vs. Transformers from Hugging Face</p>", unsafe_allow_html=True)
+    st.markdown("<h1 class='stTitle'>is it <span style='color:#ff4b4b'>Sarcastic?</span> </h1>", unsafe_allow_html=True)
+    st.markdown("<p class='subtitle'>Comparing Ensemble Learning vs. Transformer</p>", unsafe_allow_html=True)
 
     # Layout
     col_main, col_dummy = st.columns([2, 0.5]) # Main column takes more space
@@ -172,7 +145,7 @@ def main():
         if 'input_val' not in st.session_state:
             st.session_state.input_val = ""
 
-        # Quick Examples with streaming effect logic
+        # Quick Examples
         st.markdown("Try an example:")
         examples = [
             "Oh great, another meeting.", 
@@ -224,7 +197,7 @@ def main():
         # Analyze Button
         if st.button("🔍 Analyze Tone", use_container_width=True):
             if user_input.strip():
-                # Models are already loaded on startup
+                
                 
                 # Simulated "Thinking" Stream
                 status_placeholder = st.empty()
@@ -271,9 +244,9 @@ def main():
                         if ensemble_model:
                             st.markdown(f"""
                                 <div class='result-box' style='border: 2px solid {ens_color}; background: rgba(0,0,0,0.2);'>
-                                    <h3 style='color: #aaa;'>🌲 Ensemble Model</h3>
-                                    <h2 style='color: {ens_color}; margin: 10px 0;'>{ens_pred}</h2>
-                                    <p style='font-size: 0.9rem;'>Confidence: <b>{ens_conf:.1%}</b></p>
+                                    <h3 style='color: #aaa;'>🌲Ensemble Model</h3>
+                                    <h2 style='color: {ens_color}; margin: 7px 0;'>{ens_pred}</h2>
+                                    <p style='font-size: 0.7rem;'>Confidence: <b>{ens_conf:.1%}</b></p>
                                 </div>
                             """, unsafe_allow_html=True)
                         else:
@@ -284,9 +257,9 @@ def main():
                         if trans_model:
                              st.markdown(f"""
                                 <div class='result-box' style='border: 2px solid {trans_color}; background: rgba(0,0,0,0.2);'>
-                                    <h3 style='color: #aaa;'>🤖 Transformer (Hugging Face)</h3>
-                                    <h2 style='color: {trans_color}; margin: 10px 0;'>{trans_pred}</h2>
-                                    <p style='font-size: 0.9rem;'>Confidence: <b>{trans_conf:.1%}</b></p>
+                                    <h3 style='color: #aaa;'>🤖Transformer</h3>
+                                    <h2 style='color: {trans_color}; margin: 7px 0;'>{trans_pred}</h2>
+                                    <p style='font-size: 0.7rem;'>Confidence: <b>{trans_conf:.1%}</b></p>
                                 </div>
                             """, unsafe_allow_html=True)
                         else:
