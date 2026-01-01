@@ -16,7 +16,7 @@ def load_transformer_model():
             
             tokenizer = DistilBertTokenizer.from_pretrained(model_path)
             model = DistilBertForSequenceClassification.from_pretrained(model_path)
-            model.eval() # Set to evaluation mode
+            model.eval() #set to eval mode
             return tokenizer, model
         except Exception as e:
             st.error(f"Error loading transformer: {e}")
@@ -29,16 +29,16 @@ import joblib
 import os
 import sys
 
-# Add src to path to import utils properly
+#add src to path to import utils properly
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 try:
     import utils
-    # CRITICAL FIX: Register 'utils' in sys.modules so pickle finds it
+    #register 'utils' in sys.modules so pickle finds it
     sys.modules['utils'] = utils
 except ImportError:
     st.error("Could not import 'src/utils.py'. Please ensure the file exists.")
 
-# Page config (Must be first st command)
+#streamlit Page Configuration
 st.set_page_config(
     page_title="Sarcasm Detector Model",
     page_icon="😏",
@@ -46,11 +46,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize session state for history
+
 if 'history' not in st.session_state:
     st.session_state.history = []
 
-# Custom CSS for modern UI
+
+#custom CSS for modern UI
 st.markdown("""
 
 <style>
@@ -115,31 +116,28 @@ def load_sarcasm_model():
 @st.cache_resource
 def load_transformer_model():
     try:
-        # Load from Hugging Face instead of local folder
+        #load from Hugging Face instead of local folder
         model_name = "gnetozela/sarcasm_detection"
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         model = AutoModelForSequenceClassification.from_pretrained(model_name)
-        model.eval()  # Set to evaluation mode
+        model.eval()  #eval mode
         return tokenizer, model
     except Exception as e:
         st.error(f"Error loading transformer from Hugging Face: {e}")
         return None, None
 
 def main():
-    # Load models on startup
+    #load models on startup
     with st.spinner("Loading AI models..."):
         ensemble_model = load_sarcasm_model()
         trans_tokenizer, trans_model = load_transformer_model()
     
-    # ... (Sidebar code remains the same)
-
     # Main Content
     st.markdown("<h1 class='stTitle'>is it <span style='color:#ff4b4b'>Sarcastic?</span> </h1>", unsafe_allow_html=True)
     st.markdown("<p class='subtitle'>Comparing Ensemble Learning vs. Transformer</p>", unsafe_allow_html=True)
 
     # Layout
-    col_main, col_dummy = st.columns([2, 0.5]) # Main column takes more space
-
+    col_main, col_dummy = st.columns([2, 0.5]) 
     with col_main:
         # Helper to handle input state
         if 'input_val' not in st.session_state:
@@ -155,30 +153,28 @@ def main():
         
         cols = st.columns(len(examples))
         
-        # Input Placeholder
+       
         input_area_placeholder = st.empty()
 
         # When an example is clicked
         for i, ex in enumerate(examples):
             if cols[i].button(ex, key=f"ex_{i}"):
-                # Typewriter effect directly in the text area
+
+                # streaming/typewriter effect directly in the text area
                 typed_text = ""
                 for char in ex:
                     typed_text += char
-                    # Update the text area with partial text
                     input_area_placeholder.text_area(
                         "Enter your text:",
                         value=typed_text,
                         placeholder="Type something sarcastic here...",
                         height=120,
-                        key=f"input_anim_{i}_{len(typed_text)}" # Unique key to force re-render
+                        key=f"input_anim_{i}_{len(typed_text)}" 
                     )
-                    time.sleep(0.01) # Faster typing for smoother feel
+                    time.sleep(0.01) 
                 
-                # Final set to session state
                 st.session_state.input_val = ex
         
-        # Helper to handle input state
         if 'input_val' not in st.session_state:
             st.session_state.input_val = ""
 
@@ -190,16 +186,16 @@ def main():
             height=120
         )
         
-        # Update session state on manual change
+        #update session state if changed
         if user_input != st.session_state.input_val:
             st.session_state.input_val = user_input
 
-        # Analyze Button
+        #analyze
         if st.button("🔍 Analyze Tone", use_container_width=True):
             if user_input.strip():
                 
                 
-                # Simulated "Thinking" Stream
+                # simulated "Thinking" Stream
                 status_placeholder = st.empty()
                 thoughts = ["Tokenizing text...", "Consulting the Random Forest...", "Querying the Transformer...", "Aggregating sarcasm levels..."]
                 for thought in thoughts:
@@ -235,7 +231,7 @@ def main():
                         trans_pred = "Sarcastic" if trans_pred_label == 1 else "Genuine"
                         trans_color = "#ff4b4b" if trans_pred_label == 1 else "#4bff64"
 
-                    # --- Display Comparison ---
+                    # Comparison Display
                     st.markdown("### 🧠 Model Comparison")
                     col1, col2 = st.columns(2)
 
@@ -265,7 +261,7 @@ def main():
                         else:
                             st.warning("Transformer model not loaded.")
 
-                    # History Update
+                    # History Update(Not used in app yet - for future features)
                     final_verdict = trans_pred == "Sarcastic" if trans_model else (ens_pred == "Sarcastic")
                     st.session_state.history.append({"text": user_input, "is_sarcasm": final_verdict})
 
