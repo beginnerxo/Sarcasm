@@ -1,7 +1,8 @@
 import streamlit as st
 
 ##HEALTH CHECK
-if st.query_params.get("health") == ["1"]:
+health_param = st.query_params.get("health")
+if health_param == "1" or (isinstance(health_param, list) and health_param[0] == "1"):
     st.write("Still alive!🥱")
     st.stop()
 
