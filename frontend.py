@@ -1,4 +1,15 @@
 import streamlit as st
+
+##HEALTH CHECK
+if st.query_params.get("health") == ["1"]:
+    st.write("Still alive!🥱")
+    st.stop()
+
+
+
+
+
+
 import os
 import sys
 import time
