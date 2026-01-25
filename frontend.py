@@ -1,45 +1,10 @@
 import streamlit as st
-
-##HEALTH CHECK
-health_param = st.query_params.get("health")
-if health_param == "1" or (isinstance(health_param, list) and health_param[0] == "1"):
-    st.write("Still alive!🥱")
-    st.stop()
-
-
-
-
-
-
-import os
-import sys
-import time
-import joblib
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
-@st.cache_resource
-def load_transformer_model():
-    model_path = os.path.join("models", "sarcasm_transformer")
-    if os.path.exists(model_path):
-        try:
-            # Lazy import to speed up initial app load
-            import torch
-            from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
-            
-            tokenizer = DistilBertTokenizer.from_pretrained(model_path)
-            model = DistilBertForSequenceClassification.from_pretrained(model_path)
-            model.eval() #set to eval mode
-            return tokenizer, model
-        except Exception as e:
-            st.error(f"Error loading transformer: {e}")
-            return None, None
-    return None, None
-import time
-import streamlit as st
 import pandas as pd
 import joblib
 import os
 import sys
+import time
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 #add src to path to import utils properly
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
@@ -128,14 +93,28 @@ def load_sarcasm_model():
 @st.cache_resource
 def load_transformer_model():
     try:
-        #load from Hugging Face instead of local folder
+        import torch
+        # Load from Hugging Face
         model_name = "gnetozela/sarcasm_detection"
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForSequenceClassification.from_pretrained(model_name)
-        model.eval()  #eval mode
+        
+        # Force CPU to reduce memory usage on deployment
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            model_max_length=128  # Limit token length
+        )
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_name,
+            dtype=torch.float32,  # Use float32 for CPU
+            low_cpu_mem_usage=True  # Optimize memory usage
+        )
+        model.eval()  # Set to eval mode
+        
+        # Ensure model is on CPU for deployment
+        model = model.to('cpu')
+        
         return tokenizer, model
     except Exception as e:
-        st.error(f"Error loading transformer from Hugging Face: {e}")
+        st.warning(f"Transformer model unavailable: {e}")
         return None, None
 
 def main():
@@ -171,21 +150,9 @@ def main():
         # When an example is clicked
         for i, ex in enumerate(examples):
             if cols[i].button(ex, key=f"ex_{i}"):
-
-                # streaming/typewriter effect directly in the text area
-                typed_text = ""
-                for char in ex:
-                    typed_text += char
-                    input_area_placeholder.text_area(
-                        "Enter your text:",
-                        value=typed_text,
-                        placeholder="Type something sarcastic here...",
-                        height=120,
-                        key=f"input_anim_{i}_{len(typed_text)}" 
-                    )
-                    time.sleep(0.01) 
-                
+                # Directly set the value without animation to avoid widget key proliferation
                 st.session_state.input_val = ex
+                st.rerun()
         
         if 'input_val' not in st.session_state:
             st.session_state.input_val = ""
@@ -236,7 +203,10 @@ def main():
                         inputs = trans_tokenizer(user_input, return_tensors="pt", truncation=True, padding=True, max_length=128)
                         with torch.no_grad():
                             outputs = trans_model(**inputs)
-                        probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
+                        # Temperature scaling for better calibration (Solution 1)
+                        temperature = 2.5
+                        scaled_logits = outputs.logits / temperature
+                        probs = torch.nn.functional.softmax(scaled_logits, dim=-1)
                         trans_conf = torch.max(probs).item()
                         trans_pred_label = torch.argmax(probs, dim=-1).item()
                         
@@ -273,9 +243,12 @@ def main():
                         else:
                             st.warning("Transformer model not loaded.")
 
-                    # History Update(Not used in app yet - for future features)
+                    # History Update (with limit to prevent memory leaks)
                     final_verdict = trans_pred == "Sarcastic" if trans_model else (ens_pred == "Sarcastic")
                     st.session_state.history.append({"text": user_input, "is_sarcasm": final_verdict})
+                    # Keep only last 100 items to prevent unbounded growth
+                    if len(st.session_state.history) > 100:
+                        st.session_state.history = st.session_state.history[-100:]
 
                 except Exception as e:
                     st.error(f"Something went wrong: {e}")
