@@ -18,3 +18,7 @@ ENV/
 .vscode/ # VS Code specific files (optional, as some settings can be useful to share)
 .env # Environment variables file (contains sensitive information)
 pip-log.txt
+
+
+#large dir 
+models/sarcasm_transformer/

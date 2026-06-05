@@ -95,7 +95,7 @@ def load_transformer_model():
     try:
         import torch
         # Load from Hugging Face
-        model_name = "gnetozela/sarcasm_detection"
+        model_name = "gnetozela/sarcasm_detection_transformer_model"
         
         # Force CPU to reduce memory usage on deployment
         tokenizer = AutoTokenizer.from_pretrained(
@@ -176,7 +176,7 @@ def main():
                 
                 # simulated "Thinking" Stream
                 status_placeholder = st.empty()
-                thoughts = ["Tokenizing text...", "Consulting the Random Forest...", "Querying the Transformer...", "Aggregating sarcasm levels..."]
+                thoughts = ["Tokenizing text...", "Cooking...", "Churning...", "Aggregating sarcasm levels..."]
                 for thought in thoughts:
                     status_placeholder.markdown(f"*{thought}*")
                     time.sleep(0.2)
